@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 
-MAINTAINER Justin Cormack <justin@specialbusservice.com>
+MAINTAINER Mark Stillwell <mark@stillwell.me>
 
 RUN \
   apt-get update && \
@@ -9,18 +9,24 @@ RUN \
   build-essential \
   git \
   libseccomp2 \
-  libseccomp-dev \
-  clang \
-  gcc-arm-none-eabi \
-  gcc-arm-linux-gnueabihf
+  libseccomp-dev 
 
-RUN mkdir -p /usr/src && cd /usr/src/ && git clone https://github.com/justincormack/frankenlibc.git
+RUN mkdir -p /usr/src && \
+    cd /usr/src && \
+    git clone https://github.com/marklee77/lkl-linux.git && \
+    cd lkl-linux && \
+    git checkout franken && \
+    cd /usr/src && \
+    git clone https://github.com/marklee77/musl.git && \
+    cd musl && \
+    git checkout franken && \
+    cd /usr/src && \
+    git clone https://github.com/marklee77/frankenlibc.git && \
+    git checkout lkl-musl 
 
-ENV \
-  SUDO_UID=1000
+ENV SUDO_UID=1000
+ENV FRANKEN_VERBOSE=1
 
-RUN \
-  cd /usr/src/frankenlibc && \
-  ./build.sh -d /usr/local/rump -b /usr/local/bin seccomp && \
-  cp rumpobj/tests/hello /usr/local/bin/rump.helloworld && \
-  make clean
+RUN ./build.sh -d /usr/local -b /usr/local/bin clean && \
+    cp rumpobj/tests/hello /usr/local/bin/franken.hello && \
+    make clean
